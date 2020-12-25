@@ -1,8 +1,9 @@
-exports.handler = async () => {
+exports.handler = async (event) => {
     const AWS = require('aws-sdk');
     const region = process.env.Region;
     const autoScalingGroupName = process.env.AutoscalingGroupName;
     const privateKeyName = process.env.PrivateKeyName;
+    const repoName = process.env.Repo;
     AWS.config.update({region:region});
 
     let asgProm = new Promise(function(resolve, reject) {
@@ -76,8 +77,9 @@ exports.handler = async () => {
         let prom = new Promise(function(resolve, reject) {
 
             let ourout = "";
-
-            ssh.exec('echo hello', {
+            let commandDetail = "docker exec -i $(sudo docker ps | grep " + repoName + " | awk '{print $1;}') " + event.command;
+            console.log(commandDetail);
+            ssh.exec(commandDetail, {
                 exit: function() {
                     ourout += "\nsuccessfully exited!";
                     resolve(ourout);
